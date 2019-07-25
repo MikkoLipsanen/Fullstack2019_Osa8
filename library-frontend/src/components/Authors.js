@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import Select from 'react-select'
 
 const Authors = ({ result, addBorn, show }) => {
 
@@ -13,6 +14,13 @@ const Authors = ({ result, addBorn, show }) => {
     return <div>loading...</div>
   }
 
+  const names = result.data.allAuthors.map(a => ({value: a.name, label: a.name}))
+
+  const handleChange = name => {
+    setName(name.value)
+  }
+
+
   const submit = async (e) => {
     e.preventDefault()
 
@@ -20,7 +28,6 @@ const Authors = ({ result, addBorn, show }) => {
       variables: { name, born }
     })
 
-    setName('')
     setBorn('')
   }
 
@@ -51,9 +58,10 @@ const Authors = ({ result, addBorn, show }) => {
       <div>
       <form onSubmit={submit}>
         <div>
-          name <input
-            value={name}
-            onChange={({ target }) => setName(target.value)}
+          <Select
+            value={name.value}
+            onChange={handleChange}
+            options={names}
           />
         </div>
         <div>
