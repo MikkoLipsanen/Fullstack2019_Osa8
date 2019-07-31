@@ -17,7 +17,6 @@ const NewBook = (props) => {
       variables: { title, published, author, genres }
     })
 
-
     setTitle('')
     setPublished('')
     setAuthor('')

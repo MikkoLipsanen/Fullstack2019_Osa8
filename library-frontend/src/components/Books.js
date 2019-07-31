@@ -2,8 +2,6 @@ import React from 'react'
 
 const Books = ({ result, show }) => {
 
-  console.log(result.data)
-
   if (!show) {
     return null
   }
