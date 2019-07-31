@@ -14,12 +14,13 @@ const Authors = ({ result, addBorn, show }) => {
     return <div>loading...</div>
   }
 
+  console.log(result.data)
+
   const names = result.data.allAuthors.map(a => ({value: a.name, label: a.name}))
 
   const handleChange = name => {
     setName(name.value)
   }
-
 
   const submit = async (e) => {
     e.preventDefault()

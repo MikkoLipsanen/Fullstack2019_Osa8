@@ -2,6 +2,8 @@ import React from 'react'
 
 const Books = ({ result, show }) => {
 
+  console.log(result.data)
+
   if (!show) {
     return null
   }
@@ -13,7 +15,6 @@ const Books = ({ result, show }) => {
   return (
     <div>
       <h2>books</h2>
-
       <table>
         <tbody>
           <tr>
@@ -28,7 +29,7 @@ const Books = ({ result, show }) => {
           {result.data.allBooks.map(a =>
             <tr key={a.title}>
               <td>{a.title}</td>
-              <td>{a.author}</td>
+              <td>{a.author.name}</td>
               <td>{a.published}</td>
             </tr>
           )}

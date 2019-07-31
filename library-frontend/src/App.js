@@ -19,7 +19,7 @@ const ALL_BOOKS = gql`
     allBooks {
       title
       published
-      author
+      author { name }
     }
   }`
 
@@ -33,7 +33,7 @@ const CREATE_BOOK = gql`
     ) {
       title
       published
-      author
+      author { name }
     }
   }`
 
@@ -64,7 +64,7 @@ const App = () => {
   const [addBook] = useMutation(CREATE_BOOK, 
     {
       onError: handleError,
-      refetchQueries: [{ query: ALL_BOOKS }]
+      refetchQueries: [{ query: ALL_BOOKS },{ query: ALL_AUTHORS}]
     })
 
   const [addBorn] = useMutation(SET_BIRTHYEAR,
@@ -89,20 +89,19 @@ const App = () => {
 
       <Authors 
         show={page === 'authors'}
-        result = {authors}
+        result={authors}
         addBorn={addBorn}
       />
 
       <Books
         show={page === 'books'}
-        result = {books}
+        result={books}
       />
 
       <NewBook
         addBook={addBook}
         show={page === 'add'}
       />
-
     </div>
   )
 }
