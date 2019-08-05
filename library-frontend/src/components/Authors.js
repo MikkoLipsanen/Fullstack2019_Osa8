@@ -14,7 +14,6 @@ const Authors = ({ result, addBorn, show }) => {
     return <div>loading...</div>
   }
 
-  console.log(result.data)
 
   const names = result.data.allAuthors.map(a => ({value: a.name, label: a.name}))
 

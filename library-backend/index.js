@@ -83,21 +83,21 @@ const typeDefs = gql`
 
 const resolvers = {
   Query: {
-    allBooks: async (root, { author, genre }) => {
-      if(!author && !genre) {
+    allBooks: async (root, args) => {
+      if(!args.author && !args.genre) {
         return Book.find({}).populate('author', { name: 1 })
       }
-      if(author) {
-        const newAuthor = await Author.findOne({ name: author })
-        if(genre) {
-          return Book.find({ author: newAuthor, genre: { $in: [genre] }}).populate('author', { name: 1 })
-        }
-        else {
-          return Book.find({ author: newAuthor }).populate('author', { name: 1 })
-        }
+      if(args.author && !args.genre) {
+        const newAuthor = await Author.findOne({ name: args.author })
+        return Book.find({ author: newAuthor }).populate('author', { name: 1 })
       }
-      else
-        return Book.find({ genre: { $in: [genre] }}).populate('author', { name: 1 })
+      if(args.author && args.genre) {
+        const newAuthor = await Author.findOne({ name: args.author })
+        return Book.find({ author: newAuthor, genres: { $in: [args.genre] }}).populate('author', { name: 1 })
+      }
+      else {
+        return Book.find({ genres: { $in: [args.genre] }}).populate('author', { name: 1 })
+      }
     },
     bookCount: () => Book.collection.countDocuments(),
     authorCount: () => Author.collection.countDocuments(),
@@ -151,6 +151,7 @@ const resolvers = {
     editAuthor: async (root, args, context) => {
       const currentUser = context.currentUser
 
+      console.log(currentUser)
       if (!currentUser) {
         throw new AuthenticationError("not authenticated")
       }
