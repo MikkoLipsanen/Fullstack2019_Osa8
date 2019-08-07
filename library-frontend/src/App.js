@@ -4,6 +4,7 @@ import { useQuery, useMutation, useApolloClient } from '@apollo/react-hooks'
 import Authors from './components/Authors'
 import Books from './components/Books'
 import NewBook from './components/NewBook'
+import Recommend from './components/Recommend'
 import LoginForm from './components/LoginForm'
 
 const ALL_AUTHORS = gql`
@@ -16,12 +17,19 @@ const ALL_AUTHORS = gql`
   }`
 
 const ALL_BOOKS = gql`
-  {
-    allBooks {
+  query allBooks($author: String, $genre: String) {
+    allBooks(author: $author, genre: $genre) {
       title
+      author {
+        name
+      }
       published
-      author { name }
     }
+  }`
+
+  const ALL_GENRES = gql`
+  {
+    allGenres
   }`
 
 const CREATE_BOOK = gql`
@@ -48,13 +56,20 @@ const SET_BIRTHYEAR = gql`
     }
   }`
 
-  const LOGIN = gql`
-    mutation login($username: String!, $password: String!) {
-      login(username: $username, password: $password)  {
-        value
-      }
+const CURRENT_USER = gql`
+  {
+    me {
+      username
+      favoriteGenre
     }
-  `
+  }`
+
+const LOGIN = gql`
+  mutation login($username: String!, $password: String!) {
+    login(username: $username, password: $password)  {
+      value
+    }
+  }`
 
 const App = () => {
   const [page, setPage] = useState('authors')
@@ -71,12 +86,21 @@ const App = () => {
   const client = useApolloClient()
 
   const authors = useQuery(ALL_AUTHORS)
-  const books = useQuery(ALL_BOOKS)
+  const genres = useQuery(ALL_GENRES)
+  const user = useQuery(CURRENT_USER)
 
   const [addBook] = useMutation(CREATE_BOOK, 
     {
       onError: handleError,
-      refetchQueries: [{ query: ALL_BOOKS },{ query: ALL_AUTHORS}]
+      refetchQueries: [{ query: ALL_AUTHORS },{ query: ALL_GENRES }],
+      update: (store, response) => {
+        const dataInStore = store.readQuery({ query: ALL_BOOKS, variables: { genre: "" }  })
+        dataInStore.allBooks.push(response.data.addBook)
+          store.writeQuery({
+            query: ALL_BOOKS,
+            data: dataInStore
+          })
+        }
     })
 
   const [addBorn] = useMutation(SET_BIRTHYEAR,
@@ -103,8 +127,9 @@ const App = () => {
         {token 
           ? <div>
             <button onClick={() => setPage('add')}>add book</button>
+            <button onClick={() => setPage('recommend')}>recommend</button>
             <button onClick={logout}>logout</button>
-          </div>
+            </div>
           : <button onClick={() => setPage('login')}>login</button>
         }
       </div>
@@ -123,7 +148,14 @@ const App = () => {
 
       <Books
         show={page === 'books'}
-        result={books}
+        ALL_BOOKS={ALL_BOOKS}
+        result={genres}
+      />
+
+      <Recommend
+        show={page === 'recommend'}
+        ALL_BOOKS={ALL_BOOKS}
+        result={user}
       />
 
       <NewBook
@@ -135,6 +167,7 @@ const App = () => {
         show={page === 'login'}
         login={login}
         setToken={(token) => setToken(token)}
+        setPage={setPage}
       />
 
     </div>

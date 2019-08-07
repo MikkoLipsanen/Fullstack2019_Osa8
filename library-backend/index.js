@@ -5,11 +5,11 @@ const Book = require('./models/books')
 const User = require('./models/users')
 const jwt = require('jsonwebtoken')
 
-const JWT_SECRET = 'NEED_HERE_A_SECRET_KEY'
-
 mongoose.set('useFindAndModify', false)
 
-const MONGODB_URI = 'mongodb+srv://Mikko:Akureyri122@fullstack-r3lpw.mongodb.net/library?retryWrites=true'
+require('dotenv').config()
+const JWT_SECRET = process.env.JWT_SECRET
+const MONGODB_URI = process.env.MONGODB_URI
 
 console.log('connecting to', MONGODB_URI)
 
@@ -53,6 +53,7 @@ const typeDefs = gql`
     authorCount: Int!
     allBooks(author: String, genre: String): [Book!]!
     allAuthors: [Author!]!
+    allGenres: [String!]!
     me: User
   }
 
@@ -102,7 +103,11 @@ const resolvers = {
     bookCount: () => Book.collection.countDocuments(),
     authorCount: () => Author.collection.countDocuments(),
     allAuthors: () => Author.find({}),
-    me: (root, args, context) => {return context.currentUser}
+    me: (root, args, context) => {return context.currentUser},
+    allGenres: async () => {
+      const genres = await Book.distinct('genres')
+      return genres
+    }
   },   
   Author: {
     bookCount: async (root) => {
