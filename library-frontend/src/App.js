@@ -1,11 +1,19 @@
 import React, { useState } from 'react'
 import { gql } from 'apollo-boost'
-import { useQuery, useMutation, useApolloClient } from '@apollo/react-hooks'
+import { useQuery, useMutation, useSubscription, useApolloClient } from '@apollo/react-hooks'
 import Authors from './components/Authors'
 import Books from './components/Books'
 import NewBook from './components/NewBook'
 import Recommend from './components/Recommend'
 import LoginForm from './components/LoginForm'
+
+const BOOK_DETAILS = gql`
+  fragment BookDetails on Book {
+    title
+    author {name}
+    published
+  }
+`
 
 const ALL_AUTHORS = gql`
   {
@@ -19,13 +27,11 @@ const ALL_AUTHORS = gql`
 const ALL_BOOKS = gql`
   query allBooks($author: String, $genre: String) {
     allBooks(author: $author, genre: $genre) {
-      title
-      author {
-        name
-      }
-      published
+      ...BookDetails
     }
-  }`
+  }
+  ${BOOK_DETAILS} 
+  `
 
   const ALL_GENRES = gql`
   {
@@ -40,11 +46,11 @@ const CREATE_BOOK = gql`
       published: $published,
       genres: $genres
     ) {
-      title
-      published
-      author { name }
+      ...BookDetails
     }
-  }`
+  }
+  ${BOOK_DETAILS} 
+  `
 
 const SET_BIRTHYEAR = gql`
   mutation setBirthyear($name: String!, $born: Int!) {
@@ -70,6 +76,15 @@ const LOGIN = gql`
       value
     }
   }`
+
+const BOOK_ADDED = gql`
+  subscription {
+    bookAdded {
+      ...BookDetails
+    }
+  } 
+  ${BOOK_DETAILS}
+`
 
 const App = () => {
   const [page, setPage] = useState('authors')
@@ -101,6 +116,15 @@ const App = () => {
             data: dataInStore
           })
         }
+    })
+  
+    useSubscription(BOOK_ADDED, {
+      onSubscriptionData: ({ subscriptionData }) => {
+        console.log(subscriptionData)
+        window.alert(
+         `Book ${subscriptionData.data.bookAdded.title} by 
+         ${subscriptionData.data.bookAdded.author.name} was added`)
+      }
     })
 
   const [addBorn] = useMutation(SET_BIRTHYEAR,
