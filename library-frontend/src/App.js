@@ -104,28 +104,43 @@ const App = () => {
   const genres = useQuery(ALL_GENRES)
   const user = useQuery(CURRENT_USER)
 
+  const includedIn = (set, object) => {
+    set.map(p => p.id).includes(object.id) 
+  }
+
+  const updateCacheWith = (addedBook) => { 
+    const dataInStore = client.readQuery({ query: ALL_BOOKS, variables: { genre: "" }   })
+    console.log(dataInStore)
+
+    if (!includedIn(dataInStore.allBooks, addedBook)) {
+      dataInStore.allBooks.push(addedBook)
+      console.log(dataInStore)
+      client.writeQuery({
+        query: ALL_BOOKS,
+        data: dataInStore
+      })
+    }      
+  }
+
   const [addBook] = useMutation(CREATE_BOOK, 
     {
       onError: handleError,
-      refetchQueries: [{ query: ALL_AUTHORS },{ query: ALL_GENRES }],
       update: (store, response) => {
-        const dataInStore = store.readQuery({ query: ALL_BOOKS, variables: { genre: "" }  })
-        dataInStore.allBooks.push(response.data.addBook)
-          store.writeQuery({
-            query: ALL_BOOKS,
-            data: dataInStore
-          })
-        }
+      },
+      refetchQueries: [{ query: ALL_AUTHORS }, { query: ALL_GENRES }],
     })
   
     useSubscription(BOOK_ADDED, {
       onSubscriptionData: ({ subscriptionData }) => {
-        console.log(subscriptionData)
+        const addedBook = subscriptionData.data.bookAdded
         window.alert(
-         `Book ${subscriptionData.data.bookAdded.title} by 
-         ${subscriptionData.data.bookAdded.author.name} was added`)
+          `Book ${addedBook.title} by 
+          ${addedBook.author.name} was added`
+        ) 
+        updateCacheWith(addedBook)
       }
     })
+
 
   const [addBorn] = useMutation(SET_BIRTHYEAR,
     {
@@ -134,7 +149,7 @@ const App = () => {
     })
   
   const [login] = useMutation(LOGIN, {
-      onError: handleError
+    onError: handleError
   })
 
   const logout = () => {

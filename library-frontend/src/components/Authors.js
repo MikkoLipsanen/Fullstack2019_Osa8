@@ -14,7 +14,6 @@ const Authors = ({ result, addBorn, show }) => {
     return <div>loading...</div>
   }
 
-
   const names = result.data.allAuthors.map(a => ({value: a.name, label: a.name}))
 
   const handleChange = name => {
